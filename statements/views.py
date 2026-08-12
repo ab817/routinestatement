@@ -18,7 +18,7 @@ def user_login(request):
 
         user = authenticate(request, username=username, password=password)
 
-        if user and not user.is_staff:
+        if user:
             login(request, user)
             return redirect('dashboard')
 
@@ -30,10 +30,9 @@ def user_login(request):
 
 
 @login_required
+@login_required
 def dashboard(request):
-    if request.user.is_staff:
-        return redirect('/admin/')
-    return render(request, 'statements/dashboard.html')
+    return render(request, "statements/dashboard.html")
 
 def user_logout(request):
     logout(request)

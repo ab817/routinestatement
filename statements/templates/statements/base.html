@@ -22,10 +22,10 @@
         </div>
         <ul class="list-unstyled components mb-5">
           <li class="active">
-            <a href="#"><span class="fa fa-home"></span> Home</a>
+            <a href="{% url 'dashboard' %}"><span class="fa fa-home"></span> Home</a>
           </li>
           <li>
-              <a href="#"><span class="fa fa-user"></span> About</a>
+              <a href="{% url 'about' %}"><span class="fa fa-user"></span> About</a>
           </li>
           <li>
             <!-- <a href="#"><span class="fa fa-sticky-note"></span> Blog</a>
@@ -48,7 +48,7 @@
         <!-- Page Content  -->
       <div id="content" class="p-4 p-md-5">
 
-        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
           <div class="container-fluid">
 
             <button type="button" id="sidebarCollapse" class="btn btn-primary">
@@ -68,60 +68,8 @@
             </div>
           </div>
         </nav>
-        <div class="card">
-          <form method="post" action="{% url 'download_statement' %}" novalidate>
-          {% csrf_token %}
-          <div class="card-header"><h5 style ="color: rgb(91, 90, 90);">Statement Generator</h5></div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-6">
-                <div class="form-group row">
-                  <label for="account_number" class="col-sm-4 col-form-label text-right" style="font-weight: lighter">Account Number<span style="color:red">*</span></label>
-                  <div class="col-sm-8">
-                    <select name="account_number" id="AccountNumberId" class="form-control form-control-sm" required><option value="">-- Please Choose --</option>
-                      <option value="12345">12345</option>
-                      <option value="123456789">123456789</option></select>
-                      <div class="invalid-feedback">
-                        Please select an Account Number.
-                      </div>      
-                  </div>
-                </div>
-              </div>
-              <div class="col-md-6">
-                <div class="form-group row">
-                  <label for="from_date" class="col-sm-4 col-form-label text-right" style="font-weight: lighter">
-            From Date<span style="color:red">*</span></label>
-                  <div class="col-sm-8">
-                    <input type="date" name="from_date" value="from_date" id="from_dateId" placeholder="FromDate" class="form-control form-control-sm" required> 
-                    <div class="invalid-feedback">
-                      Please select a From Date.
-                    </div>       
-                  </div>
-                </div>
-              </div>
-             <div class="col-md-6">
-                <div class="form-group row">
-                  <label for="to_date" class="col-sm-4 col-form-label text-right" style="font-weight: lighter">
-            To Date<span style="color:red">*</span></label>
-                  <div class="col-sm-8">
-                    <input type="date" name="to_date" value="to_date" id="to_dateId" placeholder="ToDate" class="form-control form-control-sm" required>        
-                  <div class="invalid-feedback">
-                    Please select a To Date.
-                  </div>
-                  </div>
-                </div>
-              </div>  
-              <div class="col-md-12">
-                <div class="form-group row">
-                  <label for="DownloadCSV" class="col-sm-2 col-form-label text-right" style="font-weight: lighter"></label>
-                  <div class="col-sm-10">
-                    <input type="submit" name="DownloadCSV" id="DownloadCSVId" class="btn btn-primary w-30 py-2" value="Download CSV">        
-                  </div>
-                </div>
-              </div>
-          </div>
-          </div>
-          </form>
+        <div class="main-content">
+          {% block main_body %}{% endblock %}
         </div>
       </div>
 		</div>
