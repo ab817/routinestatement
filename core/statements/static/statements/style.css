@@ -17,6 +17,7 @@ body { font-family: Arial; background: #f4f6f8; }
   background: #00753b;
 }
 
+
 /* Expanded sidebar */
 .logo-full {
     display: block;
@@ -31,6 +32,10 @@ body { font-family: Arial; background: #f4f6f8; }
 }
 #sidebar.active .logo-icon {
     display: block;
+}
+
+#sidebar.active ~ #content .navbar.fixed-top {
+    left: 80px;
 }
 
 /* Sizes */
@@ -100,4 +105,17 @@ h5 {
 .form-control:invalid, .form-control.is-invalid {
   background-image: none !important;
   padding-right: 0.75rem !important;
+}
+
+.navbar.fixed-top {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 270px;   /* same as sidebar width */
+    height: 70px;
+    z-index: 1030;
+}
+
+#content {
+    margin-top: 70px;
 }
