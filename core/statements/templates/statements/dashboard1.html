@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        {% load static %}
+        <title>Statement Generator</title>
+        <link href="https://fonts.googleapis.com/css?family=Anton%7CBaskervville%7CRaleway&display=swap" rel="stylesheet" />
+        <link rel="stylesheet" href="{% static 'statements/style.css' %}" />
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body>
+        <nav class="navbar py-3 navbar-expand-lg" style="background-color: #00753b;" data-bs-theme="light">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#">
+                    <img src="{% static '/statements/logo-eng.png' %}" alt="Logo" width="250" height="50" class="d-inline-block">
+                </a>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0" style: "padding-left: 20px;">
+                        <li class="nav-item">
+                        <a class="nav-link active text-white font-bold" aria-current="page" href="#">Home</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link text-white font-bold" href="#">Features</a>
+                        </li>
+                        <li class="nav-item">
+                        <a class="nav-link text-white font-bold" href="#">Pricing</a>
+                        </li>
+                    </ul>
+                    <span class="navbar-text">
+                        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                            <li class="nav-item">
+                                <a class="nav-link text-white font-bold" href="#">Welcome, {{ request.user.username }}</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-white font-bold" href="{% url 'logout' %}">Logout</a>
+                            </li>
+                        </ul>
+                    </span>
+                </div>
+            </div>
+        </nav>
+        <form method="post">
+            {% csrf_token %}
+            <label>Account Number:</label>
+            <input type="text" name="account_number" required>
+
+            <br><br>
+
+            <label>From Date:</label>
+            <input type="date" name="from_date">
+
+            <label>To Date:</label>
+            <input type="date" name="to_date">
+
+            <br><br>
+
+            <button type="submit">Download CSV</button>
+        </form>
+
+    </body>
+</html>

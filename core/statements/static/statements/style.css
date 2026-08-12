@@ -1,0 +1,121 @@
+body { font-family: Arial; background: #f4f6f8; }
+
+.login-gradient-card {
+    width: 900px;
+    max-width: 95%;
+    min-height: 500px;
+    background: linear-gradient(135deg, #00753b, #2ecc71);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.navbar-brand {
+  padding-bottom: 20px;
+}
+
+#sidebar {
+  background: #00753b;
+}
+
+
+/* Expanded sidebar */
+.logo-full {
+    display: block;
+}
+.logo-icon {
+    display: none;
+}
+
+/* Collapsed sidebar */
+#sidebar.active .logo-full {
+    display: none;
+}
+#sidebar.active .logo-icon {
+    display: block;
+}
+
+#sidebar.active ~ #content .navbar.fixed-top {
+    left: 80px;
+}
+
+/* Sizes */
+.logo-full {
+    height: 45px;
+    margin-top: 5px;
+    margin-left: 20px;
+}
+
+.logo-icon {
+    height: 30px;
+    margin-top: 5px;
+    margin-left: 25px;
+}
+
+@media (max-width: 990px) {
+  .logo-full {
+    display: none;
+}
+}
+
+#sidebar ul li a:hover {
+  color: rgb(176, 174, 174); 
+}
+
+#navbar ul li a:hover {
+  color: rgb(176, 174, 174); 
+}
+
+.nav-link {
+  font-size: 15px;
+  font-weight: bold;
+  text-decoration-color: #00753b;
+  color: rgb(211, 29, 29);
+}
+
+.btn.btn-primary {
+  background:#00753b;
+  border-color: #801216;
+}
+
+.btn.btn-primary:hover, .btn.btn-primary:focus {
+    background: #03572D !important;
+    border-color: #801216 !important;
+}
+
+.card {
+  box-shadow: 0 0 1px rgba(0, 0, 0, .125), 0 1px 3px rgba(0, 0, 0, .2);
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+}
+
+.card-header {
+  padding: 10px;
+}
+
+h5 {
+  font-weight: bold;
+  margin-bottom: 0;
+}
+
+.form-control:valid, .form-control.is-valid {
+  background-image: none !important;
+  padding-right: 0.75rem !important;
+}
+
+.form-control:invalid, .form-control.is-invalid {
+  background-image: none !important;
+  padding-right: 0.75rem !important;
+}
+
+.navbar.fixed-top {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 270px;   /* same as sidebar width */
+    height: 70px;
+    z-index: 1030;
+}
+
+#content {
+    margin-top: 70px;
+}
