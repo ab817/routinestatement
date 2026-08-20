@@ -38,6 +38,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'statements',
+    'rest_framework',
+    'statements_api',
+    'rest_framework_simplejwt',
 ]
 
 MIDDLEWARE = [
@@ -117,5 +120,10 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-TRANSACTION_FILES_ROOT = r"D:\Statement Git\txn\mob"
+TRANSACTION_FILES_ROOT = r"C:\Users\Admin\Desktop\routinestatement\email_support"
 
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+}
