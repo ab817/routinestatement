@@ -4,25 +4,20 @@ import random
 
 # Configuration
 OUTPUT_DIR = "email_support"  # The folder where your Django app reads the files
-TOTAL_ACCOUNTS = 5
-TXNS_PER_ACCOUNT_PER_DAY = 100
+TOTAL_ACCOUNTS = 1
+TXNS_PER_ACCOUNT_PER_DAY = 1
 
 # 5 Fake 16-digit account numbers
 FAKE_ACCOUNTS = [
-    "0100200000008016",
-    "0100200000008017",
+    
     "0100200000008018",
-    "0100200000008019",
-    "0100200000008020",
 ]
 
 # Some dummy names and emails to make the data look real
 DUMMY_NAMES = [
-    ("NITA KOIRALA", "nitakoirala.krl@gmail.com"),
-    ("RAM SHARMA", "ram.sharma@gmail.com"),
-    ("SITA THAPA", "sita.thapa@gmail.com"),
-    ("HARI BUDHA", "hari.budha@gmail.com"),
-    ("GEETA K.C.", "geeta.kc@gmail.com"),
+    ("NITA KOIRALA", "manishacharya3345@gmail.com"),
+    
+    
 ]
 
 def generate_files():
@@ -37,7 +32,7 @@ def generate_files():
         datetime.now()                       # Today
     ]
     
-    txn_counter = 5000  # Just a starting point for the transaction ID
+    txn_counter = 6000  # Just a starting point for the transaction ID
 
     for acc_num in FAKE_ACCOUNTS:
         for target_date in dates_to_generate:

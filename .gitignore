@@ -91,6 +91,4 @@ dmypy.json
 #*/migrations/*
 
 
-# Ignore generated transaction files but keep the folder
-email_support/*
-!email_support/.gitkeep
+

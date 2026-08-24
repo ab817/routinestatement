@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load the variables from the .env file
+load_dotenv() 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,6 +46,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'statements_api',
     'rest_framework_simplejwt',
+    'alert',
 ]
 
 MIDDLEWARE = [
@@ -127,3 +133,25 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
+# ---------------- ALERT APP SETTINGS ----------------
+
+
+
+# 1. Excluded Accounts (Easy to change later)
+EXCLUDED_ACCOUNTS = [
+    "0100200000008019",
+    "0100200000009123",
+]
+
+#2. File Retention Period (Days)
+TRANSACTION_FILE_RETENTION_DAYS = 2
+
+# 3. Email Backend Configuration (Example using Gmail)
+# NOTE: If using Gmail, you MUST use an "App Password", not your normal password.
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.environ.get('EMAIL_HOST_USER', 'default_fallback@email.com')
+EMAIL_HOST_PASSWORD = os.environ.get('EMAIL_HOST_PASSWORD', '')   
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
