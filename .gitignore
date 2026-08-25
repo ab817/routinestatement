@@ -90,5 +90,9 @@ dmypy.json
 
 #*/migrations/*
 
+email_support/
 
 
+# Postman local cache and exports
+.postman/
+postman/
