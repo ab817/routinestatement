@@ -45,24 +45,30 @@ class Command(BaseCommand):
                     line = f.readline().strip()
                     content_parts = line.split('|')
                     
-                    if len(content_parts) < 11:
+                    # Real files have at least 18 fields
+                    if len(content_parts) < 18:
                         raise ValueError("Invalid file content format")
                         
-                    status = content_parts[0]       # CREDITED or DEBITED
-                    email = content_parts[1]         # Recipient email
-                    name = content_parts[2].strip()  # Customer name
-                    amount_str = content_parts[5]    # Amount
-                    date_str = content_parts[7]      # Date String (e.g., 20:36 04 FEB 2025)
-                    description = content_parts[8]   # Description
-                    operator = content_parts[9]      # Operator
+                    status = content_parts[0] # DEBITED or CREDITED
+                    # content_parts[1] is bank email, skip
+                    # content_parts[4] is masked account number, so we use filename instead
+                    
+                    amount_str = content_parts[6]    # e.g., "NPR240.00"
+                    date_str = content_parts[8]      # e.g., "10:14 22 AUG 2026"
+                    description = content_parts[9]   # e.g., "debit"
+                    operator = content_parts[10]     # e.g., "ESEWA.USER"
+                    # content_parts[11] is Transaction ID, but we use filename to be safe
+                    
+                    email = content_parts[16]        # Customer Email
+                    name = content_parts[17].strip() # Customer Name
                     
                 # 3. Convert Data Types safely
                 # Parse the date string into a Python datetime object
-                # Example: "20:36 04 FEB 2025" -> "%H:%M %d %b %Y"
                 txn_date = datetime.strptime(date_str, "%H:%M %d %b %Y")
                 
-                # Parse amount into Decimal
-                amount = Decimal(amount_str)
+                # Clean the amount string (remove 'NPR' if present, and any spaces)
+                clean_amount = amount_str.replace("NPR", "").replace(" ", "").strip()
+                amount = Decimal(clean_amount)
                 
                 # 4. Insert into Database (Prevent Duplicates)
                 # get_or_create returns a tuple: (object, created_boolean)
