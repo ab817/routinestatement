@@ -10,7 +10,7 @@ TXNS_PER_ACCOUNT_PER_DAY = 1
 # 5 Fake 16-digit account numbers
 FAKE_ACCOUNTS = [
     
-    "0100200000008018",
+    "0100200000008032",
 ]
 
 # Some dummy names and emails to make the data look real
@@ -32,7 +32,7 @@ def generate_files():
         datetime.now()                       # Today
     ]
     
-    txn_counter = 6000  # Just a starting point for the transaction ID
+    txn_counter = 5710  # Just a starting point for the transaction ID
 
     for acc_num in FAKE_ACCOUNTS:
         for target_date in dates_to_generate:

@@ -86,6 +86,15 @@ class Command(BaseCommand):
                 else:
                     skipped_count += 1
                     self.stdout.write(f"Skipped (already in DB): {transaction_id}")
+                
+                #  NEW REQUIREMENT: Delete the file immediately after DB success
+                # This runs for BOTH newly imported and already-existing transactions,
+                # because in both cases, the data is safely in the database.
+                try:
+                    os.remove(filepath)
+                    self.stdout.write(f"  -> Deleted file: {filename}")
+                except Exception as del_e:
+                    self.stderr.write(self.style.ERROR(f"  -> Failed to delete file {filename}: {del_e}"))
                     
             except Exception as e:
                 error_count += 1
