@@ -90,5 +90,7 @@ dmypy.json
 
 #*/migrations/*
 
+email_support/
+
 
 

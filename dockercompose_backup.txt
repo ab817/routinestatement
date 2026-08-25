@@ -1,0 +1,49 @@
+services:
+  db:
+    image: postgres
+    ports:
+      - 5433:5432
+    environment:
+      POSTGRES_DB: maindigital
+      POSTGRES_USER: main_digital
+      POSTGRES_PASSWORD: P@sswordXXX
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER}"]
+      interval: 30s
+      timeout: 30s
+      retries: 10
+    restart: always
+    volumes:
+      - /var/backup/main_digital:/var/lib/postgresql/data
+    networks:
+      - maindigital_network
+
+  migration:
+    image: main_digital:latest
+    profiles: [initialize]
+    depends_on:
+      db:
+        condition: service_healthy
+    env_file:
+      - .env
+    command: bash -c "python manage.py makemigrations && python manage.py migrate"
+    networks:
+      - maindigital_network
+
+  app:
+    image: main_digital:latest
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - "XXX.XX.XX.XX:8002:8000"
+    env_file:
+      - .env
+    networks:
+      - maindigital_network
+    restart: always
+    volumes:
+      - .:/app
+
+networks:
+  maindigital_network:
