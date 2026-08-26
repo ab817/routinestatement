@@ -1,71 +1,85 @@
-import os
-from django.conf import settings
-from datetime import datetime, timedelta
-from .file_utils import parse_filename
+from datetime import datetime
+
+from statements.models import Transaction
+
 
 def read_transactions(account_number, from_date, to_date):
+    """
+    Read transactions from the database.
+
+    The source files are imported into the database first and may then
+    be deleted. Therefore, API transaction lookup should use the database.
+
+    Parameters:
+        account_number:
+            Account number to search.
+
+        from_date:
+            Python date object representing the starting date.
+
+        to_date:
+            Python date object representing the ending date.
+
+    Returns:
+        List of transaction dictionaries.
+    """
+
+    # ---------------------------------------------------------
+    # Inclusive date range
+    # ---------------------------------------------------------
+
+    from_dt = datetime.combine(
+        from_date,
+        datetime.min.time()
+    )
+
+    to_dt = datetime.combine(
+        to_date,
+        datetime.max.time()
+    )
+
+    # ---------------------------------------------------------
+    # Query database
+    #
+    # Account_Number_2 is used as the primary account number
+    # for the API transaction lookup.
+    # ---------------------------------------------------------
+
+    queryset = (
+        Transaction.objects
+        .filter(
+            account_number_2=str(account_number),
+            date_time__gte=from_dt,
+            date_time__lte=to_dt,
+        )
+        .order_by("date_time")
+    )
+
     transactions = []
 
-    from_dt = datetime.combine(from_date, datetime.min.time())
-    to_dt = datetime.combine(to_date, datetime.max.time())
+    for txn in queryset:
 
-    root = settings.TRANSACTION_FILES_ROOT
-
-    if not root:
-        raise ValueError("TRANSACTION_FILES_ROOT is not configured")
-
-    if not os.path.isdir(root):
-        raise FileNotFoundError(f"Transaction folder does not exist: {root}")
-
-    for filename in os.listdir(root):
-
-        try:
-            meta = parse_filename(filename)
-        except ValueError:
-            continue
-
-        if not meta:
-            continue
-
-        # Filter by account
-        if str(meta["account_no"]) != str(account_number):
-            continue
-
-        # Filter by date range
-        if not (from_dt <= meta["datetime"] <= to_dt):
-            continue
-
-        file_path = os.path.join(root, filename)
-
-        with open(file_path, "r", encoding="utf-8") as f:
-            line = f.readline().strip()
-            parts = line.split("|")
-
-        # We access parts[0] through parts[15]
-        if len(parts) < 16:
-            continue
-
-        txn = {
-            "Status": parts[0],
-            "Email": parts[1],
-            "Name": parts[2],
-            "Account Number": meta["account_no"],
-            "Remarks 1": parts[4],
-            "Amount": parts[5],
-            "Fee": parts[6],
-            "Date": meta["datetime"].strftime("%Y-%m-%d %H:%M:%S"),
-            "Description": parts[8],
-            "Remarks 2": parts[9],
-            "Transaction ID": meta["transaction_id"],
-            "Debit Account": parts[11],
-            "Credit Account": parts[12],
-            "Details 1": parts[13],
-            "Details 2": parts[14],
-            "Details 3": parts[15],
-        }
-
-        transactions.append(txn)
-
-    transactions.sort(key=lambda x: x["Date"])
+        transactions.append({
+            "Status": txn.status,
+            "Email": txn.email,
+            "Details_1": txn.details_1,
+            "Account_Name": txn.account_name,
+            "Masked_Account": txn.masked_account,
+            "Details_2": txn.details_2,
+            "Amount": str(txn.amount),
+            "Fees": str(txn.fees),
+            "Date_Time": txn.date_time.strftime(
+                "%Y-%m-%d %H:%M:%S"
+            ),
+            "Details_3": txn.details_3,
+            "User": txn.user,
+            "File_Transaction_ID": txn.file_transaction_id,
+            "Account_Number_1": txn.account_number_1,
+            "Account_Number_2": txn.account_number_2,
+            "Channel_Type": txn.channel_type,
+            "ID": txn.id_value,
+            "Payment_Details_2": txn.payment_details_2,
+            "Customer_Details": txn.customer_details,
+        })
 
     return transactions

@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from django.db.models import Q
+
 from rest_framework.decorators import (
     api_view,
     authentication_classes,
@@ -61,11 +63,12 @@ def transaction_api(request):
         )
 
     transactions = Transaction.objects.filter(
-        account_number=account_number,
-        transaction_date__date__gte=from_date,
-        transaction_date__date__lte=to_date
+        Q(account_number_1=account_number) |
+        Q(account_number_2=account_number),
+        date_time__date__gte=from_date,
+        date_time__date__lte=to_date
     ).order_by(
-        "transaction_date"
+        "date_time"
     )
 
     serializer = TransactionSerializer(
