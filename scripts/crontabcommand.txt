@@ -1,0 +1,5 @@
+crontab -e
+
+* * * * * flock -n /tmp/transaction_import.lock /opt/routinestatement/scripts/import_transactions.sh
+
+
