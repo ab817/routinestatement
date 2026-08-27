@@ -1,59 +1,90 @@
-from datetime import datetime
+from datetime import datetime, time, timedelta
+
+from django.db.models import Q
+from django.utils import timezone
 
 from statements.models import Transaction
 
 
 def read_transactions(account_number, from_date, to_date):
     """
-    Read transactions from the database.
+    Read transactions from the database for statement generation.
 
-    The source files are imported into the database first and may then
-    be deleted. Therefore, API transaction lookup should use the database.
+    Account matching:
+        account_number_1 OR account_number_2
 
-    Parameters:
-        account_number:
-            Account number to search.
+    Date matching:
+        from_date 00:00:00 inclusive
+        to_date + 1 day 00:00:00 exclusive
 
-        from_date:
-            Python date object representing the starting date.
-
-        to_date:
-            Python date object representing the ending date.
-
-    Returns:
-        List of transaction dictionaries.
+    Both CREDITED and DEBITED transactions are returned.
     """
 
     # ---------------------------------------------------------
-    # Inclusive date range
+    # Validate date range
     # ---------------------------------------------------------
 
-    from_dt = datetime.combine(
-        from_date,
-        datetime.min.time()
-    )
+    if from_date > to_date:
+        return []
 
-    to_dt = datetime.combine(
-        to_date,
-        datetime.max.time()
-    )
+    account_number = str(account_number).strip()
 
     # ---------------------------------------------------------
-    # Query database
+    # Create timezone-aware datetime boundaries
     #
-    # Account_Number_2 is used as the primary account number
-    # for the API transaction lookup.
+    # Example:
+    #
+    # from_date = 2026-08-26
+    # to_date   = 2026-08-26
+    #
+    # Start:
+    # 2026-08-26 00:00:00 +05:45
+    #
+    # End:
+    # 2026-08-27 00:00:00 +05:45
+    # ---------------------------------------------------------
+
+    from_dt = timezone.make_aware(
+        datetime.combine(
+            from_date,
+            time.min
+        )
+    )
+
+    to_dt = timezone.make_aware(
+        datetime.combine(
+            to_date + timedelta(days=1),
+            time.min
+        )
+    )
+
+    # ---------------------------------------------------------
+    # Query transactions
+    #
+    # IMPORTANT:
+    # Match account_number against BOTH fields.
+    #
+    # There is intentionally NO status filter.
+    #
+    # Therefore:
+    #   CREDITED -> included
+    #   DEBITED  -> included
     # ---------------------------------------------------------
 
     queryset = (
         Transaction.objects
         .filter(
-            account_number_2=str(account_number),
+            Q(account_number_1=account_number)
+            | Q(account_number_2=account_number),
             date_time__gte=from_dt,
-            date_time__lte=to_dt,
+            date_time__lt=to_dt,
         )
         .order_by("date_time")
     )
+
+    # ---------------------------------------------------------
+    # Convert database records to dictionaries
+    # ---------------------------------------------------------
 
     transactions = []
 
@@ -68,9 +99,15 @@ def read_transactions(account_number, from_date, to_date):
             "Details_2": txn.details_2,
             "Amount": str(txn.amount),
             "Fees": str(txn.fees),
-            "Date_Time": txn.date_time.strftime(
+
+            # Convert database timezone to Kathmandu time
+            # before writing the statement.
+            "Date_Time": timezone.localtime(
+                txn.date_time
+            ).strftime(
                 "%Y-%m-%d %H:%M:%S"
             ),
+
             "Details_3": txn.details_3,
             "User": txn.user,
             "File_Transaction_ID": txn.file_transaction_id,

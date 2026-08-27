@@ -1,5 +1,6 @@
 from datetime import datetime
 import os
+import re
 
 
 def parse_filename(filename):
@@ -116,13 +117,21 @@ def parse_transaction_line(line):
 
 def parse_amount(value):
     """
-    Convert values such as:
+    Normalize transaction amount/fee values into a
+    Decimal-compatible string.
+
+    Supported examples:
 
         NPR2000.00
         NPR 2000.00
+        USD600000.00
+        USD 22161.60
         2000.00
+        1,234,567.89
+        USD1,234.50
 
-    into a Decimal-compatible string.
+    Returns:
+        A numeric string suitable for Decimal().
     """
 
     if value is None:
@@ -130,12 +139,50 @@ def parse_amount(value):
 
     value = str(value).strip()
 
-    value = value.replace("NPR", "")
+    if not value:
+        return "0.00"
+
+    # Remove a 3-letter currency code only when it appears
+    # at the beginning of the value.
+    #
+    # Examples:
+    #   NPR2000.00  -> 2000.00
+    #   USD6000.00  -> 6000.00
+    #   EUR 500.00  -> 500.00
+    #
+    value = re.sub(
+        r"^[A-Za-z]{3}\s*",
+        "",
+        value
+    )
+
+    # Remove thousands separators.
     value = value.replace(",", "")
+
     value = value.strip()
 
     if not value:
         return "0.00"
+
+    # Validate the final value before passing it to Decimal().
+    #
+    # Accepted:
+    #   2000
+    #   2000.00
+    #   -2000.00
+    #   +2000.00
+    #
+    # Rejected:
+    #   20ABC00
+    #   USD20XYZ
+    #   2,000.00 after malformed processing
+    if not re.fullmatch(
+        r"[+-]?\d+(?:\.\d+)?",
+        value
+    ):
+        raise ValueError(
+            f"Invalid amount format: {value}"
+        )
 
     return value
 
