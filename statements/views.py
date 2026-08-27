@@ -38,39 +38,163 @@ def user_logout(request):
     logout(request)
     return redirect('user_login')
 
-
+#download csv statement
 def download_statement(request):
+
     if request.method != "POST":
-        return HttpResponse("Invalid request", status=400)
+        return render(
+            request,
+            "statements/dashboard.html",
+            {
+                "backend_error": "Invalid request.",
+            }
+        )
 
-    account_number = request.POST.get("account_number")
-    from_date = request.POST.get("from_date")
-    to_date = request.POST.get("to_date")
+    account_number = request.POST.get("account_number", "").strip()
+    from_date_str = request.POST.get("from_date", "").strip()
+    to_date_str = request.POST.get("to_date", "").strip()
 
-    if not account_number: 
-        return HttpResponse("Account number missing", status=400)
-    if not from_date:
-        return HttpResponse("From date missing", status=400)
-    if not to_date:
-        return HttpResponse("To date missing", status=400)
+    # ---------------------------------------------------------
+    # Validate account number
+    # ---------------------------------------------------------
 
-    # convert dates
-    from_date = datetime.strptime(from_date, "%Y-%m-%d").date()
-    to_date = datetime.strptime(to_date, "%Y-%m-%d").date()
-    timestamp = datetime.now().strftime("%Y%m%d")
+    if not account_number:
+        return render(
+            request,
+            "statements/dashboard.html",
+            {
+                "backend_error": "Account number is required.",
+                "account_number": account_number,
+                "from_date": from_date_str,
+                "to_date": to_date_str,
+            }
+        )
 
-    transactions = read_transactions(account_number, from_date, to_date)
+    # ---------------------------------------------------------
+    # Validate From Date
+    # ---------------------------------------------------------
+
+    if not from_date_str:
+        return render(
+            request,
+            "statements/dashboard.html",
+            {
+                "backend_error": "From Date is required.",
+                "account_number": account_number,
+                "from_date": from_date_str,
+                "to_date": to_date_str,
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Validate To Date
+    # ---------------------------------------------------------
+
+    if not to_date_str:
+        return render(
+            request,
+            "statements/dashboard.html",
+            {
+                "backend_error": "To Date is required.",
+                "account_number": account_number,
+                "from_date": from_date_str,
+                "to_date": to_date_str,
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Convert dates
+    # ---------------------------------------------------------
+
+    try:
+        from_date = datetime.strptime(
+            from_date_str,
+            "%Y-%m-%d"
+        ).date()
+
+        to_date = datetime.strptime(
+            to_date_str,
+            "%Y-%m-%d"
+        ).date()
+
+    except ValueError:
+
+        return render(
+            request,
+            "statements/dashboard.html",
+            {
+                "backend_error": "Invalid date format.",
+                "account_number": account_number,
+                "from_date": from_date_str,
+                "to_date": to_date_str,
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Validate date range
+    # ---------------------------------------------------------
+
+    if from_date > to_date:
+
+        return render(
+            request,
+            "statements/dashboard.html",
+            {
+                "backend_error": (
+                    "From Date cannot be later than To Date."
+                ),
+                "account_number": account_number,
+                "from_date": from_date_str,
+                "to_date": to_date_str,
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Read transactions
+    # ---------------------------------------------------------
+
+    transactions = read_transactions(
+        account_number,
+        from_date,
+        to_date
+    )
+
+    # ---------------------------------------------------------
+    # No transactions found
+    # ---------------------------------------------------------
 
     if not transactions:
-        return render(request, "statements/dashboard.html", {
-            "backend_error": "No transactions found"
-        })
+
+        return render(
+            request,
+            "statements/dashboard.html",
+            {
+                "backend_error": (
+                    "No transactions found for the "
+                    "given account and date range."
+                ),
+                "account_number": account_number,
+                "from_date": from_date_str,
+                "to_date": to_date_str,
+            }
+        )
+
+    # ---------------------------------------------------------
+    # Generate CSV
+    # ---------------------------------------------------------
 
     csv_data = generate_csv(transactions)
 
-    response = HttpResponse(csv_data, content_type="text/csv")
+    timestamp = datetime.now().strftime("%Y%m%d")
+
+    response = HttpResponse(
+        csv_data,
+        content_type="text/csv"
+    )
+
     response["Content-Disposition"] = (
-        f'attachment; filename="{account_number}_statement_{timestamp}.csv"'
+        f'attachment; '
+        f'filename="{account_number}_statement_{timestamp}.csv"'
     )
 
     return response

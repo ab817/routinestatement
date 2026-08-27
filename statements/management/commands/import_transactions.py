@@ -52,6 +52,7 @@ class Command(BaseCommand):
         imported_count = 0
         skipped_count = 0
         error_count = 0
+        encoding_fallback_count = 0
 
         for filename in os.listdir(root):
 
@@ -79,15 +80,52 @@ class Command(BaseCommand):
 
                 # ---------------------------------------------------------
                 # 2. Read transaction file
+                #
+                # Primary encoding: UTF-8
+                # Fallback encoding: CP1252
                 # ---------------------------------------------------------
 
-                with open(
-                    filepath,
-                    "r",
-                    encoding="utf-8"
-                ) as f:
+                try:
+                    with open(
+                        filepath,
+                        "r",
+                        encoding="utf-8"
+                    ) as f:
 
-                    line = f.readline().strip()
+                        line = f.readline().strip()
+
+                except UnicodeDecodeError:
+
+                    encoding_fallback_count += 1
+
+                    logger.warning(
+                        "UTF-8 decoding failed for %s. "
+                        "Retrying with CP1252.",
+                        filename
+                    )
+
+                    self.stderr.write(
+                        self.style.WARNING(
+                            f"UTF-8 decoding failed for {filename}. "
+                            f"Using CP1252 fallback."
+                        )
+                    )
+
+                    try:
+                        with open(
+                            filepath,
+                            "r",
+                            encoding="cp1252"
+                        ) as f:
+
+                            line = f.readline().strip()
+
+                    except UnicodeDecodeError as exc:
+
+                        raise ValueError(
+                            "Unable to decode transaction file "
+                            "using UTF-8 or CP1252."
+                        ) from exc
 
                 if not line:
                     raise ValueError(
@@ -133,7 +171,9 @@ class Command(BaseCommand):
 
                 try:
                     amount = Decimal(amount_value)
+
                 except InvalidOperation as exc:
+
                     raise ValueError(
                         f"Invalid amount: {data['amount']}"
                     ) from exc
@@ -148,7 +188,9 @@ class Command(BaseCommand):
 
                 try:
                     fees = Decimal(fees_value)
+
                 except InvalidOperation as exc:
+
                     raise ValueError(
                         f"Invalid fees: {data['fees']}"
                     ) from exc
@@ -273,13 +315,17 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
-            f"Imported : {imported_count}"
+            f"Imported             : {imported_count}"
         )
 
         self.stdout.write(
-            f"Skipped  : {skipped_count}"
+            f"Skipped              : {skipped_count}"
         )
 
         self.stdout.write(
-            f"Errors   : {error_count}"
+            f"Encoding fallback    : {encoding_fallback_count}"
+        )
+
+        self.stdout.write(
+            f"Errors               : {error_count}"
         )
